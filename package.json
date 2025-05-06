@@ -1,0 +1,31 @@
+{
+  "name": "upload-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsx watch src/infra/http/server.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MateusPaula/upload-server.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MateusPaula/upload-server/issues"
+  },
+  "homepage": "https://github.com/MateusPaula/upload-server#readme",
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@types/node": "^22.15.9",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.0.1",
+    "fastify-type-provider-zod": "^4.0.2",
+    "zod": "^3.24.4"
+  }
+}
