@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx watch src/infra/http/server.ts"
+    "dev": "tsx watch --env-file .env src/infra/http/server.ts",
+    "services:up": "docker compose -f docker_compose.yml up -d",
+    "services:down": "docker compose -f docker_compose.yml down"
   },
   "repository": {
     "type": "git",

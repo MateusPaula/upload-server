@@ -1,3 +1,4 @@
+import { env } from "@/env";
 import { fastifyCors } from "@fastify/cors";
 import { fastify } from "fastify";
 
@@ -7,6 +8,7 @@ server.register(fastifyCors, {
   origin: "*",
 });
 
+console.log(env.DATABASE_URL);
 server.listen({ port: 3333, host: "0.0.0.0" }, () => {
   console.log("HTTP server running!");
 });
