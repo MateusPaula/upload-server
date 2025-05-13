@@ -1,5 +1,5 @@
-import { db } from '@/infra/db'
-import { schema } from '@/infra/db/schemas'
+import { uploadImage } from '@/app/functions/upload-image'
+import { isRight, unwrapEither } from '@/shared/either'
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
 
@@ -9,23 +9,45 @@ export const uploadImageRoute: FastifyPluginAsyncZod = async server => {
     {
       schema: {
         summary: 'Upload an image',
-        body: z.object({
-          name: z.string(),
-          password: z.string().optional(),
-        }),
+        consumes: ['multipart/form-data'], // para receber arquivos
         response: {
-          201: z.object({ uploadId: z.string() }),
+          201: z.null().describe('Image uploaded.'),
           400: z.object({ message: z.string() }).describe('Upload already exists.'),
         },
       },
     },
     async (request, reply) => {
-      await db.insert(schema.uploads).values({
-        name: 'firstUpload',
-        remoteKey: 'video.mp4',
-        remoteUrl: 'https://myurl.com'
+      const uploadedFile = await request.file({
+        limits: { fileSize: 1024 * 1024 * 2 } //2mb (1024 = 1kb)
       })
-      return reply.status(201).send({ uploadId: '123' })
+
+      if (!uploadedFile) {
+        return reply.status(400).send({message: 'File is required.'})
+      }
+
+      
+      // we should avoid this because it is not scalable
+      // with multiple users, the variable file will receive too much content and it will cost a lot
+      // const file = await uploadedFile?.toBuffer();
+      
+      const result = await uploadImage({
+        fileName: uploadedFile.filename,
+        contentType: uploadedFile.mimetype,
+        // We should use streams to send data to the storage service
+        // asynchronously while the front-end also sends data to the backend
+        contentStream: uploadedFile.file
+      })
+
+      if (isRight(result)){
+        return reply.status(201).send()
+      }
+
+      const error = unwrapEither(result);
+
+      switch(error.constructor.name) {
+        case 'InvalidFileFormat':
+            return reply.status(400).send({ message: error.message });
+      }
     }
   )
 }
