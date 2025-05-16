@@ -28,6 +28,7 @@
   "homepage": "https://github.com/MateusPaula/upload-server#readme",
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
+    "@faker-js/faker": "^9.8.0",
     "@types/node": "^22.15.9",
     "dotenv-cli": "^8.0.0",
     "drizzle-kit": "^0.31.1",
@@ -43,6 +44,7 @@
     "@fastify/multipart": "^9.0.3",
     "@fastify/swagger": "^9.5.1",
     "@fastify/swagger-ui": "^5.2.2",
+    "dayjs": "^1.11.13",
     "drizzle-orm": "^0.43.1",
     "fastify-type-provider-zod": "^4.0.2",
     "postgres": "^3.4.5",

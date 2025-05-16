@@ -1,6 +1,6 @@
 import { db } from "@/infra/db";
 import { schema } from "@/infra/db/schemas";
-import { isLeft, isRight, unwrapEither } from "@/shared/either";
+import { isLeft, isRight, unwrapEither } from "@/infra/shared/either";
 import { eq } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import { Readable } from "node:stream";
