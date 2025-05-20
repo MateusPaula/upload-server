@@ -10,6 +10,7 @@ export const uploadImageRoute: FastifyPluginAsyncZod = async server => {
       schema: {
         summary: 'Upload an image',
         consumes: ['multipart/form-data'], // para receber arquivos
+        tags: ['uploads'],
         response: {
           201: z.null().describe('Image uploaded.'),
           400: z.object({ message: z.string() }).describe('Upload already exists.'),
@@ -18,46 +19,43 @@ export const uploadImageRoute: FastifyPluginAsyncZod = async server => {
     },
     async (request, reply) => {
       const uploadedFile = await request.file({
-        limits: { fileSize: 1024 * 1024 * 2 } //2mb (1024 = 1kb)
+        limits: { fileSize: 1024 * 1024 * 2 }, //2mb (1024 = 1kb)
       })
 
       if (!uploadedFile) {
-        return reply.status(400).send({message: 'File is required.'})
+        return reply.status(400).send({ message: 'File is required.' })
       }
 
-      
       // we should avoid this because it is not scalable
       // with multiple users, the variable file will receive too much content and it will cost a lot
       // const file = await uploadedFile?.toBuffer();
-      
+
       const result = await uploadImage({
         fileName: uploadedFile.filename,
         contentType: uploadedFile.mimetype,
         // We should use streams to send data to the storage service
         // asynchronously while the front-end also sends data to the backend
-        contentStream: uploadedFile.file
+        contentStream: uploadedFile.file,
       })
 
       // After the functions that consumes the stream
       // Check if the file is truncated (Boolean)
       if (uploadedFile.file.truncated) {
         return reply.status(400).send({
-          message: 'File size limit reached.'
+          message: 'File size limit reached.',
         })
       }
 
-
       //unwrapEither returns the result
-      if (isRight(result)){
-        console.log(unwrapEither(result))
+      if (isRight(result)) {
         return reply.status(201).send()
       }
 
-      const error = unwrapEither(result);
+      const error = unwrapEither(result)
 
-      switch(error.constructor.name) {
+      switch (error.constructor.name) {
         case 'InvalidFileFormat':
-            return reply.status(400).send({ message: error.message });
+          return reply.status(400).send({ message: error.message })
       }
     }
   )

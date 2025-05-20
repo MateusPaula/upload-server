@@ -1,43 +1,44 @@
-import { db } from "@/infra/db";
-import { schema } from "@/infra/db/schemas";
-import { Either, makeLeft, makeRight } from "@/infra/shared/either";
-import { uploadFiletoStorage } from "@/infra/storage/upload-file-to-storage";
-import { Readable } from "node:stream";
-import { z } from "zod";
-import { InvalidFileFormat } from "./errors/invalid-file-format";
+import { db } from '@/infra/db'
+import { schema } from '@/infra/db/schemas'
+import { type Either, makeLeft, makeRight } from '@/infra/shared/either'
+import { uploadFileToStorage } from '@/infra/storage/upload-file-to-storage'
+import { Readable } from 'node:stream'
+import { z } from 'zod'
+import { InvalidFileFormat } from './errors/invalid-file-format'
 
 const uploadImageSchema = z.object({
-    fileName: z.string(),
-    contentType: z.string(),
-    contentStream: z.instanceof(Readable)
+  fileName: z.string(),
+  contentType: z.string(),
+  contentStream: z.instanceof(Readable),
 })
 
 // z.input = consider input values when transforming the type
 // z.infer / output = consider output values when transforming the type
-type UploadImageInput = z.input<typeof uploadImageSchema> 
+type UploadImageInput = z.input<typeof uploadImageSchema>
 
 const allowedMimeTypes = ['image/jpg', 'image/jpeg', 'image/png', 'image/webp']
 
-export async function uploadImage(input: UploadImageInput): Promise<Either<InvalidFileFormat, { url: string }>> {
-   const { fileName, contentType, contentStream } = uploadImageSchema.parse(input)
+export async function uploadImage(
+  input: UploadImageInput
+): Promise<Either<InvalidFileFormat, { url: string }>> {
+  const { fileName, contentType, contentStream } = uploadImageSchema.parse(input)
 
-   if (!allowedMimeTypes.includes(contentType)){
+  if (!allowedMimeTypes.includes(contentType)) {
     return makeLeft(new InvalidFileFormat())
-   }
+  }
 
-   const {key, url } = await uploadFiletoStorage({
+  const { key, url } = await uploadFileToStorage({
     folder: 'images',
     fileName,
     contentType,
-    contentStream
-   })
+    contentStream,
+  })
 
-   await db.insert(schema.uploads).values({
+  await db.insert(schema.uploads).values({
     name: fileName,
     remoteKey: key,
-    remoteUrl: url
-   })
+    remoteUrl: url,
+  })
 
-   return makeRight({ url: '' })
-    
+  return makeRight({ url })
 }
