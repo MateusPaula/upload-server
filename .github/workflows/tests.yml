@@ -1,25 +1,35 @@
+# This workflow runs end-to-end tests on pull requests
 name: E2E Tests
 
+# Define when the workflow should be triggered
 on:
   pull_request:
+    # Only run on pull requests targeting the main branch
     branches:
       - main
+    # Trigger on these pull request events
     types: [opened, reopened, labeled, unlabeled, synchronize]
 
 jobs:
   run-ci:
     name: Run E2E Tests
+    # Run the job on the latest Ubuntu runner
     runs-on: ubuntu-latest
 
+    # Define service containers needed for the tests
     services:
+      # Set up a PostgreSQL database for testing
       postgres:
         image: postgres:13
+        # Map container port 5432 to host port 5432
         ports:
           - 5432:5432
+        # Set environment variables for the database
         env:
           POSTGRES_USER: docker
           POSTGRES_PASSWORD: docker
           POSTGRES_DB: upload_test
+        # Configure health check options for the database
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -27,19 +37,18 @@ jobs:
           --health-retries 5
 
     steps:
+      # Check out the repository code
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-        name: Install pnpm
-        with:
-          version: 9
-          run_install: false
-
+      # Set up Node.js environment
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "pnpm"
+          # Enable caching for faster installations
+          cache: "npm"
 
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm run test
+      # Install project dependencies
+      - run: npm ci
+      # Run the test suite
+      - run: npm test
